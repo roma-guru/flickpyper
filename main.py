@@ -1,16 +1,16 @@
 from flickrapi import FlickrAPI, FlickrError
 
-from os import environ, path
-import sys
+from os import environ, path, remove, system
+import sys, pickle
 import argparse
 from datetime import date
-from logging import getLogger
-log = getLogger(__name__)
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 API_KEY = '23005d9cf8cc185c1c2d17152d03d98b'
 
 VERSION = '0.1'
-
 SIZES = ('Square', 'Large Square', 'Thumbnail', 'Small', 'Small 320',
          'Medium', 'Medium 640', 'Medium 800', 'Large', 'Large 1600',
          'Large 2048', 'Original')
@@ -75,7 +75,9 @@ def parse_opts(opts):
 
 def save_file(url, dst):
     import wget
+    remove(dst)
     wget.download(url, dst)
+
 
 def window_manager():
     CURR_DESK = environ.get('XDG_CURRENT_DESKTOP')
@@ -104,16 +106,21 @@ def os():
     else:
         return 'unknown'
 
-def set_wallpaper():
+def set_wallpaper(path):
     _os = os()
     if _os=='windows':
+        log.debug("Windows")
         pass
     elif _os=='macosx':
+        log.debug("Mac")
         set_wallpaper_macosx(path)
     elif _os in ('linux', 'unix'):
+        log.debug("Linux")
         set_wallpaper_linux(path)
     else:
-        pass
+        log.error("Unsupported machine")
+        return False
+    return True
 
 def set_wallpaper_macosx(path):
     pass
@@ -130,18 +137,19 @@ def set_wallpaper_linux(path):
 def set_wallpaper_gnome(path):
     # TODO: can we do better? There must be python bindings!
     bash = """
-        if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-          # if not found, launch a new one
-          eval `dbus-launch --sh-syntax`
-        fi
+    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    # if not found, launch a new one
+    eval `dbus-launch --sh-syntax`
+    fi
 
-        gsettings set org.gnome.desktop.background picture-uri "file://{path}"
+    gsettings set org.gnome.desktop.background picture-uri "file://{path}"
     """.format(path=path)
+    system(bash)
 
-def set_wallpaper_feh():
-    os.system('feh --bg-fill {}'.format(path))
+def set_wallpaper_feh(path):
+    system('feh --bg-fill {}'.format(path))
 
-def set_wallpaper_kde():
+def set_wallpaper_kde(path):
     pass
 
 def get_default_image_path():
@@ -158,28 +166,42 @@ def get_default_image_path():
         return path.join(HOME, '.flickpaper.jpg')
 
 def get_ids(file):
-    pass
+    if path.isfile(file):
+        with open(file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return []
 
 def put_ids(file, ids):
-    pass
+    with open(file, 'wb') as f:
+        pickle.dump(ids, f)
 
 def run():
     options = parse_opts(sys.argv[1:])
+    log.debug(f"options = {options}")
 
     size_idx = SIZES.index(options.size)
+    log.debug(f"size_idx = {size_idx}")
     if not size_idx or size_idx < 0:
-        log.error("Invalid size argument: #{options[:size]}.\nPlease select from: #{SIZES.join(', ')}.")
+        log.error(f"Invalid size argument: {options['size']}.\
+                  \nPlease select from: {', '.join(SIZES)}.")
         sys.exit(1)
 
-    opts = {k:v for (k,v) in d.items() if k in ('page','per_page','date') and v}
-    log.info("Getting interesting list: #{opts.inspect}")
+    opts = {k:v for (k,v) in vars(options).items() if k in ('page','per_page','date') and v}
+    log.info(f"Getting interesting list: {opts}")
     try:
-        list = flickr.interestingness.getList()
+        list = flickr.interestingness.getList(**opts)['photos']['photo']
     except FlickrError as e:
-        log.error("Flickr API error: {}".format(e.code))
+        log.error(f"Flickr API error: {e.code}")
         sys.exit(1)
 
-    ids = get_ids(options.dump)
+    log.debug(f"list = {list}")
+    try:
+        ids = get_ids(options.dump)
+    except:
+        # That's ok, file from Ruby version
+        ids = []
+    log.debug("ids = {ids}")
     list = [i for i in list if i not in ids]
 
     idx = None
@@ -188,23 +210,29 @@ def run():
     log.info("Selecting large photo")
     for i in range(len(list)):
         try:
-            size = flickr.photos.getSizes(photo_id=list[i]['id'])
+            size = flickr.photos.getSizes(photo_id=list[i]['id'])['sizes']['size']
         except FlickrError as e:
-            log.error("Flickr API error: #{e.message}")
+            log.error(f"Flickr API error: {e.code}")
             sys.exit(1)
+        log.debug(f"size = {size}")
         def detect(s):
             my_size_idx = SIZES.index(s['label'])
             return my_size_idx and my_size_idx >= size_idx
-        my_size = filter(detect, size)[0]
-        if my_size:
+        my_size = next(filter(detect, size))
+        log.debug(f"my_size = {my_size}")
+        if my_size is not None:
             idx = i
             url = my_size['source']
+            log.debug(f"url = {url}")
             break
 
-    if idx:
+    if idx is not None:
         my_photo = list[idx]
+        log.debug(f"my_photo = {my_photo}")
 
+        log.info("Saving picture")
         save_file(url, options.image)
+        log.info("Setting wallpaper")
         result = set_wallpaper(options.image)
         if result:
             log.info("Set photo #{my_photo['id']} as wallpaper")
