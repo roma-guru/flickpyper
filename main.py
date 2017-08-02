@@ -115,7 +115,11 @@ def set_wallpaper(path):
     return True
 
 def set_wallpaper_macosx(path):
-    pass
+    # Not tested
+    bash = """
+    osascript -e 'tell application "Finder" to set desktop picture to POSIX file "{}"
+    """.format(path)
+    system(bash)
 
 def set_wallpaper_linux(path):
     wm = window_manager()
