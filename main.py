@@ -79,7 +79,7 @@ def save_file(url, dst):
     wget.download(url, dst)
 
 def window_manager():
-    # Should work for most DM (gnome, kde, xfce, i3, openbox)
+    # Should work for most DE (gnome, kde, xfce, i3, openbox)
     SESSION_DESKTOP = environ.get('XDG_SESSION_DESKTOP')
     DESKTOP_SESSION = environ.get('DESKTOP_SESSION')
     desktop = SESSION_DESKTOP or DESKTOP_SESSION
@@ -138,8 +138,8 @@ def set_wallpaper_gnome(path):
 
 def set_wallpaper_xfce(path):
     bash = """bash -c "
-    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor$(xrandr -q \
-        | awk '/ connected/{print $1}')/workspace0/last-image -s {}"
+    xfconf-query -c xfce4-desktop -p \
+        /backdrop/screen0/monitor0/workspace0/last-image -s {}"
     """.format(path)
     system(bash)
 
