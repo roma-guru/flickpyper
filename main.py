@@ -78,19 +78,11 @@ def save_file(url, dst):
     remove(dst)
     wget.download(url, dst)
 
-
 def window_manager():
-    CURR_DESK = environ.get('XDG_CURRENT_DESKTOP')
-    DATA_DIRS = environ.get('XDG_DATA_DIRS')
-    # TODO: $XDG_SESSION_DESKTOP, $XDG_MENU_PREFIX, $DESKTOP_SESSION
-    # TODO: test other wms
-    if CURR_DESK:
-        desktop = CURR_DESK.lower()
-    else:
-        exclude = ('usr', 'local', 'share')
-        v = DATA_DIRS.lower().split('/:')
-        if len(v) == 1:
-            desktop = v[0].lower()
+    # Should work for most DM (gnome, kde, xfce, i3, openbox)
+    SESSION_DESKTOP = environ.get('XDG_SESSION_DESKTOP')
+    DESKTOP_SESSION = environ.get('DESKTOP_SESSION')
+    desktop = SESSION_DESKTOP or DESKTOP_SESSION
     return desktop
 
 def os():
@@ -131,19 +123,24 @@ def set_wallpaper_linux(path):
         set_wallpaper_gnome(path)
     elif wm == 'kde':
         set_wallpaper_kde(path)
-    else:
+    elif wm == 'xfce':
+        set_wallpaper_xfce(path)
+    elif wm in ('i3', 'openbox'):
         set_wallpaper_feh(path)
+    else:
+        print("Unsupported window manager: {}".format(wm)
 
 def set_wallpaper_gnome(path):
-    # TODO: can we do better? There must be python bindings!
-    bash = """
-    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-    # if not found, launch a new one
-    eval `dbus-launch --sh-syntax`
-    fi
+    from gi.repository import Gio
+    settings = Gio.Settings.new("org.gnome.desktop.background")
+    settings.set_string("picture-uri", "file://" + path)
+    settings.apply()
 
-    gsettings set org.gnome.desktop.background picture-uri "file://{path}"
-    """.format(path=path)
+def set_wallpaper_xfce(path):
+    bash = """bash -c "
+    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor$(xrandr -q \
+        | awk '/ connected/{print $1}')/workspace0/last-image -s {}"
+    """.format(path)
     system(bash)
 
 def set_wallpaper_feh(path):
