@@ -2,9 +2,8 @@ from flickrapi import FlickrAPI, FlickrError
 
 from os import environ, path, remove, system
 import sys, pickle
-import argparse
-from datetime import date
 import logging
+
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
@@ -17,83 +16,10 @@ SIZES = ('Square', 'Large Square', 'Thumbnail', 'Small', 'Small 320',
 
 flickr = FlickrAPI(API_KEY, '', format='parsed-json')
 
-def parse_opts(opts):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dump', '-d', dest='dump', nargs=1,
-                        help= "Dump file for used photo ids.",
-                        type=str, default=path.join(HOME, '.flickpaper.dump'),
-    )
-    parser.add_argument('--image', '-i', dest='image', nargs=1,
-                        help= "Where to store the downloaded image.",
-                        type=str, default=get_default_image_path(),
-    )
-    parser.add_argument('--log', '-l', dest='log', nargs=1,
-                        help= "Path to log file.",
-                        type=str, default=None,
-    )
-    parser.add_argument('--per-page', '-p', dest='per_page', nargs=1,
-                        help= "Number of interesting photos per page in flickr api call.",
-                        type=int, default=100,
-    )
-    parser.add_argument('--date', dest='date', nargs=1,
-                        help= "A specific date, formatted as YYYY-MM-DD, to return interesting photos for. Default: null (most recent)",
-                        type=date, default=None,
-    )
-    parser.add_argument('--page', dest='page', nargs=1,
-                        help= "The page of results to return. Default: #{options[:page]}",
-                        type=int, default=1,
-    )
-    parser.add_argument('--size', '-s', dest='size', nargs=1,
-                        help= "Minimum acceptable image size. Default: #{options[:size]}",
-                        type=str, default='Large 2048',
-    )
-    parser.add_argument('--verbose', '-v', dest='verbose',
-                        help= "Be verbose.", action='store_const',
-                        const=True, default=False,
-    )
-    parser.add_argument('--sizes', dest='sizes',
-                        help= "Print sizes and exit.", action='store_const',
-                        const=True, default=False,
-    )
-    parser.add_argument('--version', dest='version',
-                        help= "Print version and exit.", action='store_const',
-                        const=True, default=False,
-    )
-
-    res = parser.parse_args(opts)
-    if res.sizes:
-        print(', '.join(SIZES))
-        sys.exit(0)
-    elif res.version:
-        print(VERSION)
-        sys.exit(0)
-    else:
-        return res
-
-def save_file(url, dst):
-    import wget
-    remove(dst)
-    wget.download(url, dst)
-
-def window_manager():
-    # Should work for most DE (gnome, kde, xfce, i3, openbox)
-    SESSION_DESKTOP = environ.get('XDG_SESSION_DESKTOP')
-    DESKTOP_SESSION = environ.get('DESKTOP_SESSION')
-    desktop = SESSION_DESKTOP or DESKTOP_SESSION
-    return desktop
-
-def os():
-    host_os = sys.platform
-    if host_os in ('cygwin', 'windows'):
-        return 'windows'
-    elif host_os in ('darwin',):
-        return 'macosx'
-    elif host_os in ('linux',):
-        return 'linux'
-    elif host_os in ('solaris', 'bsd'):
-        return 'unix'
-    else:
-        return 'unknown'
+from .options import parse_opts
+from .common import os, save_file
+from .winmac import set_wallpaper_windows, set_wallpaper_macosx
+from .linux import set_wallpaper_linux
 
 def set_wallpaper(path):
     _os = os()
@@ -110,68 +36,6 @@ def set_wallpaper(path):
         log.error("Unsupported machine")
         return False
     return True
-
-def set_wallpaper_macosx(path):
-    try:
-	# Nicer way
-	from appscript import app, mactypes
-	app('Finder').desktop_picture.set(mactypes.File(path))
-    except ImportError:
-        # Uglier way
-        bash = """
-        osascript -e 'tell application "Finder" to set desktop picture to POSIX file "{}"
-        """.format(path)
-        system(bash)
-
-def set_wallpaper_linux(path):
-    wm = window_manager()
-    if wm == 'gnome':
-        set_wallpaper_gnome(path)
-    elif wm == 'kde':
-        set_wallpaper_kde(path)
-    elif wm == 'xfce':
-        set_wallpaper_xfce(path)
-    elif wm in ('i3', 'openbox'):
-        set_wallpaper_feh(path)
-    else:
-        print("Unsupported window manager: {}".format(wm)
-
-def set_wallpaper_gnome(path):
-    try:
-        from gi.repository import Gio
-        settings = Gio.Settings.new("org.gnome.desktop.background")
-        settings.set_string("picture-uri", "file://" + path)
-        settings.apply()
-    except ImportError:
-        # TODO: cmdline
-        pass
-
-def set_wallpaper_xfce(path):
-    bash = """
-    xfconf-query -c xfce4-desktop -p \
-        /backdrop/screen0/monitor0/workspace0/last-image -s {}
-    """.format(path)
-    system(bash)
-
-def set_wallpaper_feh(path):
-    bash = 'feh --bg-fill {}'.format(path)
-    system(bash)
-
-def set_wallpaper_kde(path):
-    # TODO: KDE support
-    pass
-
-def set_wallpaper_lxde(path):
-    # TODO: lxde support
-    pass
-
-def set_wallpaper_windows(path):
-    import ctypes
-    SPI = 20
-    SPIF = 2
-    # Should support not only bmp but jpg
-    ctypes.windll.user32.SystemParametersInfoW(
-        SPI, 0, path.encode('utf16'), SPIF)
 
 def get_default_image_path():
     _os = os()
