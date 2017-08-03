@@ -15,9 +15,6 @@ SIZES = ('Square', 'Large Square', 'Thumbnail', 'Small', 'Small 320',
          'Medium', 'Medium 640', 'Medium 800', 'Large', 'Large 1600',
          'Large 2048', 'Original')
 
-HOME = environ.get('HOME')
-USER = environ.get('USER')
-
 flickr = FlickrAPI(API_KEY, '', format='parsed-json')
 
 def parse_opts(opts):
@@ -102,7 +99,7 @@ def set_wallpaper(path):
     _os = os()
     if _os=='windows':
         log.debug("Windows")
-        pass
+        set_wallpaper_windows(path)
     elif _os=='macosx':
         log.debug("Mac")
         set_wallpaper_macosx(path)
@@ -115,11 +112,16 @@ def set_wallpaper(path):
     return True
 
 def set_wallpaper_macosx(path):
-    # Not tested
-    bash = """
-    osascript -e 'tell application "Finder" to set desktop picture to POSIX file "{}"
-    """.format(path)
-    system(bash)
+    try:
+	# Nicer way
+	from appscript import app, mactypes
+	app('Finder').desktop_picture.set(mactypes.File(path))
+    except ImportError:
+        # Uglier way
+        bash = """
+        osascript -e 'tell application "Finder" to set desktop picture to POSIX file "{}"
+        """.format(path)
+        system(bash)
 
 def set_wallpaper_linux(path):
     wm = window_manager()
@@ -135,28 +137,46 @@ def set_wallpaper_linux(path):
         print("Unsupported window manager: {}".format(wm)
 
 def set_wallpaper_gnome(path):
-    from gi.repository import Gio
-    settings = Gio.Settings.new("org.gnome.desktop.background")
-    settings.set_string("picture-uri", "file://" + path)
-    settings.apply()
+    try:
+        from gi.repository import Gio
+        settings = Gio.Settings.new("org.gnome.desktop.background")
+        settings.set_string("picture-uri", "file://" + path)
+        settings.apply()
+    except ImportError:
+        # TODO: cmdline
+        pass
 
 def set_wallpaper_xfce(path):
-    bash = """bash -c "
+    bash = """
     xfconf-query -c xfce4-desktop -p \
-        /backdrop/screen0/monitor0/workspace0/last-image -s {}"
+        /backdrop/screen0/monitor0/workspace0/last-image -s {}
     """.format(path)
     system(bash)
 
 def set_wallpaper_feh(path):
-    system('feh --bg-fill {}'.format(path))
+    bash = 'feh --bg-fill {}'.format(path)
+    system(bash)
 
 def set_wallpaper_kde(path):
+    # TODO: KDE support
     pass
+
+def set_wallpaper_lxde(path):
+    # TODO: lxde support
+    pass
+
+def set_wallpaper_windows(path):
+    import ctypes
+    SPI = 20
+    SPIF = 2
+    # Should support not only bmp but jpg
+    ctypes.windll.user32.SystemParametersInfoW(
+        SPI, 0, path.encode('utf16'), SPIF)
 
 def get_default_image_path():
     _os = os()
     if _os=='windows':
-        return None
+        return path.join(HOME, '.flickpaper.jpg')
     elif _os=='macosx':
         home_tmp = path.join(HOME, 'tmp')
         if path.isdir(home_tmp):
@@ -243,6 +263,13 @@ def run():
             log.error("Unable to set photo #{my_photo['id']} as wallpaper")
     else:
         log.error("Unable to find photo for wallpaper")
+
+if os() == 'windows':
+    HOME = environ.get('USERPROFILE')
+    USER = environ.get('USERNAME')
+else:
+    HOME = environ.get('HOME')
+    USER = environ.get('USER')
 
 if __name__=='__main__':
     run()
