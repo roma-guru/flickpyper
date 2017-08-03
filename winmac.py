@@ -2,9 +2,9 @@ from os import system
 
 def set_wallpaper_macosx(path):
     try:
-		# Nicer way
-		from appscript import app, mactypes
-		app('Finder').desktop_picture.set(mactypes.File(path))
+        # Nicer way
+        from appscript import app, mactypes
+        app('Finder').desktop_picture.set(mactypes.File(path))
     except ImportError:
         # Uglier way
         bash = """

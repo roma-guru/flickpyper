@@ -1,6 +1,7 @@
 import argparse
 from os import path
 from datetime import date
+from common import HOME, get_default_image_path
 
 def parse_opts(opts):
     parser = argparse.ArgumentParser()

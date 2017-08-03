@@ -1,5 +1,4 @@
 from os import environ, system
-from .main import log
 
 def window_manager():
     # Should work for most DE (gnome, kde, xfce, i3, openbox)
@@ -21,19 +20,21 @@ def set_wallpaper_linux(path):
     elif wm in ('i3', 'openbox'):
         set_wallpaper_feh(path)
     else:
-        print("Unsupported window manager: {}".format(wm)
+        print("Unsupported window manager: {}".format(wm))
 
 def set_wallpaper_gnome(path):
     try:
         from gi.repository import Gio
-        log.debug("Using gsettings api")
+        print("Using gsettings api")
         settings = Gio.Settings.new("org.gnome.desktop.background")
         settings.set_string("picture-uri", "file://" + path)
         settings.apply()
     except ImportError:
-        # TODO: cmdline
-        log.debug("Using gsettings cmd")
-        pass
+        print("Using gsettings cmd")
+        bash = """
+        gsettings set org.gnome.desktop.background picture-uri "file://{}"
+        """.format(path)
+        system(bash)
 
 def set_wallpaper_xfce(path):
     bash = """
@@ -43,7 +44,7 @@ def set_wallpaper_xfce(path):
     system(bash)
 
 def set_wallpaper_feh(path):
-    bash = 'feh --bg-fill {}'.format(path)
+    bash = "feh --bg-fill {}".format(path)
     system(bash)
 
 def set_wallpaper_kde(path):
