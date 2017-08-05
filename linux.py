@@ -15,7 +15,7 @@ def set_wallpaper_linux(path):
         set_wallpaper_kde(path)
     elif wm == 'xfce':
         set_wallpaper_xfce(path)
-    elif wm == 'lxde':
+    elif wm in ('lxde', 'Lubuntu'):
         set_wallpaper_lxde(path)
     elif wm in ('i3', 'openbox'):
         set_wallpaper_feh(path)

@@ -18,6 +18,7 @@ def set_wallpaper_windows(path):
     SPI = 20
     SPIF = 2
     # Should support not only bmp but jpg
-    ctypes.windll.user32.SystemParametersInfoW(
-        SPI, 0, path.encode('utf16'), SPIF)
+    # TODO: problems with nonascii
+    ctypes.windll.user32.SystemParametersInfoA(
+        SPI, 0, path.encode('us-ascii'), SPIF)
 

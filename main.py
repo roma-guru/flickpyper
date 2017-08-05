@@ -37,7 +37,7 @@ def set_wallpaper(path):
 def run():
     options = parse_opts(sys.argv[1:])
 
-    size_idx = SIZES.index(options.size)
+    size_idx = SIZES.index(options.size[0])
     if not size_idx or size_idx < 0:
         print(f"Invalid size argument: {options['size']}.\
                   \nPlease select from: {', '.join(SIZES)}.")
