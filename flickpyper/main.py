@@ -12,11 +12,11 @@ SIZES = ('Square', 'Large Square', 'Thumbnail', 'Small', 'Small 320',
 
 flickr = FlickrAPI(API_KEY, '', format='parsed-json')
 
-from options import parse_opts
-from common import os, save_file, get_default_image_path
-from winmac import set_wallpaper_windows, set_wallpaper_macosx
-from linux import set_wallpaper_linux
-from pickles import put_ids, get_ids
+from flickpyper.options import parse_opts
+from flickpyper.common import os, save_file, get_default_image_path
+from flickpyper.winmac import set_wallpaper_windows, set_wallpaper_macosx
+from flickpyper.linux import set_wallpaper_linux
+from flickpyper.pickles import put_ids, get_ids
 
 def set_wallpaper(path):
     _os = os()
