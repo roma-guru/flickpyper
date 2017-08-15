@@ -47,6 +47,7 @@ def parse_opts(opts):
     )
 
     res = parser.parse_args(opts)
+    if res.verbose: print(f"Options: {res}")
     if res.sizes:
         print(', '.join(SIZES))
         sys.exit(0)

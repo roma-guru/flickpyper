@@ -37,14 +37,14 @@ def set_wallpaper(path):
 def run():
     options = parse_opts(sys.argv[1:])
 
-    size_idx = SIZES.index(options.size[0])
+    size_idx = SIZES.index(options.size)
     if not size_idx or size_idx < 0:
         print(f"Invalid size argument: {options['size']}.\
                   \nPlease select from: {', '.join(SIZES)}.")
         sys.exit(1)
 
     opts = {k:v for (k,v) in vars(options).items() if k in ('page','per_page','date') and v}
-    print(f"Getting interesting list: {opts}")
+    if options.verbose: print(f"Getting interesting list: {opts}")
     try:
         list = flickr.interestingness.getList(**opts)['photos']['photo']
     except FlickrError as e:
@@ -57,37 +57,41 @@ def run():
         # That's ok, file from Ruby version
         ids = []
     list = [i for i in list if i not in ids]
+    if options.verbose: print(f"List: {list}")
 
     idx = None
     url = None
 
-    print("Selecting large photo")
+    if options.verbose: print("Selecting large photo")
     for i in range(len(list)):
         try:
             size = flickr.photos.getSizes(photo_id=list[i]['id'])['sizes']['size']
         except FlickrError as e:
             print(f"Flickr API error: {e.code}")
             sys.exit(1)
-        print(f"size = {size}")
+        if options.verbose: print(f"size = {size}")
         def detect(s):
             my_size_idx = SIZES.index(s['label'])
             return my_size_idx and my_size_idx >= size_idx
-        my_size = next(filter(detect, size))
+        try:
+            my_size = next(filter(detect, size))
+        except StopIteration:
+            my_size = None
         if my_size is not None:
             idx = i
             url = my_size['source']
-            print(f"url = {url}")
+            if options.verbose: print(f"url = {url}")
             break
 
     if idx is not None:
         my_photo = list[idx]
 
-        print("Saving picture")
+        if options.verbose: print("Saving picture")
         save_file(url, options.image)
-        print("Setting wallpaper")
+        if options.verbose: print("Setting wallpaper")
         result = set_wallpaper(options.image)
         if result:
-            print(f"Set photo {my_photo['id']} as wallpaper")
+            if options.verbose: print(f"Set photo {my_photo['id']} as wallpaper")
             ids.append(my_photo['id'])
             put_ids(options.dump, ids)
         else:
