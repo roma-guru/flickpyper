@@ -12,5 +12,6 @@ setup(name='flickpyper',
       url='https://github.com/roman-voropaev/flickpyper',
       keywords='flickr wallpaper',
       packages=['flickpyper'],
+      scripts=['flickpy'],
       classifiers=[]
 )
