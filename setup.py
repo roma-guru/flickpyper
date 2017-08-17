@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from flickpyper.main import VERSION
+from flickpyper.config import VERSION
 
 setup(name='flickpyper',
       version=VERSION,
@@ -13,5 +13,6 @@ setup(name='flickpyper',
       keywords='flickr wallpaper',
       packages=['flickpyper'],
       scripts=['bin/flickpyper'],
+      install_requires=['flickrapi','wget'],
       classifiers=[]
 )
