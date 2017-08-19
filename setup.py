@@ -2,6 +2,7 @@
 
 from distutils.core import setup
 from flickpyper.config import VERSION
+from sys import platform
 
 setup(name='flickpyper',
       version=VERSION,
@@ -12,7 +13,7 @@ setup(name='flickpyper',
       url='https://github.com/roman-voropaev/flickpyper',
       keywords='flickr wallpaper',
       packages=['flickpyper'],
-      scripts=['bin/flickpyper'],
+      scripts=['bin/flickpyper.bat' if platform()=='win32' else 'bin/flickpyper'],
       install_requires=['flickrapi','wget'],
       classifiers=[]
 )

@@ -5,6 +5,7 @@ import sys
 from flickpyper.config import *
 
 flickr = FlickrAPI(API_KEY, '', format='parsed-json')
+options = None
 
 from flickpyper.options import parse_opts
 from flickpyper.common import os, save_file, get_default_image_path
@@ -30,6 +31,7 @@ def set_wallpaper(path):
 
 def run():
     options = parse_opts(sys.argv[1:])
+    if options.verbose: print("OS: {}".format(os()))
 
     size_idx = SIZES.index(options.size)
     if not size_idx or size_idx < 0:
@@ -63,7 +65,7 @@ def run():
         except FlickrError as e:
             print(f"Flickr API error: {e.code}")
             sys.exit(1)
-        if options.verbose: print(f"size = {size}")
+        if options.verbose: print(f"size = {size[0]}...")
         def detect(s):
             my_size_idx = SIZES.index(s['label'])
             return my_size_idx and my_size_idx >= size_idx

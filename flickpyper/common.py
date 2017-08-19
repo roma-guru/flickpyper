@@ -3,7 +3,7 @@ from os import environ, path, remove
 
 def os():
     host_os = sys.platform
-    if host_os in ('cygwin', 'windows'):
+    if host_os in ('cygwin', 'win32'):
         return 'windows'
     elif host_os in ('darwin',):
         return 'macosx'
@@ -38,4 +38,6 @@ def get_default_image_path():
             return path.join('/tmp', 'flickpaper-{}.jpg'.format(USER))
     elif _os in ('linux', 'unix'):
         return path.join(HOME, '.flickpaper.jpg')
-
+    else:
+        print("Unknown OS, exiting")
+        sys.exit(-1)
