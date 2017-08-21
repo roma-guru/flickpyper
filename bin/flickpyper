@@ -1,2 +1,5 @@
-#!/bin/bash
-python3.6 -m flickpyper.main $@
+#!/usr/bin/env python3.6
+import sys
+from flickpyper import main
+
+main.run()
