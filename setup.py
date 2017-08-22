@@ -17,6 +17,7 @@ setup(name='flickpyper',
       packages=['flickpyper'],
       scripts=['bin/flickpyper'],
       install_requires=['flickrapi','wget'],
+      data_files=[('',['README.md'])],
       #executables=[Executable('bin/flickpyper')],
       python_requires='>=3.6',
       classifiers=[
