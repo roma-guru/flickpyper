@@ -11,11 +11,17 @@ setup(name='flickpyper',
       long_description=open('README.md').read(),
       author='Roman Voropaev',
       author_email='voropaev.roma@gmail.com',
+      license='MIT',
       url='https://github.com/roman-voropaev/flickpyper',
-      keywords='flickr wallpaper',
+      keywords='flickr wallpaper desktop',
       packages=['flickpyper'],
       scripts=['bin/flickpyper'],
       install_requires=['flickrapi','wget'],
       #executables=[Executable('bin/flickpyper')],
-      classifiers=[]
+      python_requires='>=3.6',
+      classifiers=[
+          'Development Status :: 3 - Alpha',
+          'License :: OSI Approved :: MIT License',
+          'Programming Language :: Python :: 3.6',
+      ]
 )

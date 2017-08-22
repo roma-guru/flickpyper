@@ -1,4 +1,5 @@
-# Flickpyper
+# Your wallpaper problem finally solved!
+## About
 This is Python fork of flickpaper (https://github.com/atongen/flickpaper).
 Initially this was an exercise to compare Ruby and Python syntaxes.
 Then wider platform support was added, but Linux/Gnome setup with one monitor
@@ -23,3 +24,6 @@ Windows version won't support non-ascii in your home dir!
 ## TODO
 add to pypi
 multiple monitors
+gui version with 1 button
+check internet connection
+windows setup
