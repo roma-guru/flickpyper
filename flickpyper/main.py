@@ -48,12 +48,14 @@ def run():
         sys.exit(1)
 
     try:
+        # TODO: just randomize instead of dump
         ids = get_ids(options.dump)
     except:
         # That's ok, file from Ruby version
         ids = []
-    list = [i for i in list if i not in ids]
-    if options.verbose: print(f"List: {list}")
+    if options.verbose: print(f"Used Ids: {ids}")
+    list = [p for p in list if p['id'] not in ids]
+    if options.verbose: print(f"Filtered: {list[:3]}...")
 
     idx = None
     url = None

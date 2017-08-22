@@ -7,7 +7,7 @@ Maybe better support for multiple monitors will be added later.
 
 ## Supported OS
 - Linux (Gnome, KDE, Lxde, Xfce, i3/openbox)
-- Windows (8,10)
+- Windows (7,8,10)
 - Mac OS X
 
 ## Requirements
