@@ -15,8 +15,10 @@ Maybe better support for multiple monitors will be added later.
 __Python 3.6__ - I love that Ruby-like strings formatting!
 
 ## Install
+```
 git clone https://github.com/roman-voropaev/flickpyper
 pip3 install ./flickpyper --user
+```
 
 ## Known bugs
 Windows version won't support non-ascii in your home dir!
