@@ -9,7 +9,7 @@ def window_manager():
 
 def set_wallpaper_linux(path):
     wm = window_manager()
-    if wm in ('gnome','cinnamon','mate'):
+    if wm in ('ubuntu','gnome','cinnamon','mate'):
         set_wallpaper_gnome(path)
     elif wm == 'kde':
         set_wallpaper_kde(path)
