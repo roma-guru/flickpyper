@@ -1,16 +1,8 @@
 from os import system
 
 def set_wallpaper_macosx(path):
-    try:
-        # Nicer way
-        from appscript import app, mactypes
-        app('Finder').desktop_picture.set(mactypes.File(path))
-    except ImportError:
-        # Uglier way
-        bash = """
-        osascript -e 'tell application "Finder" to set desktop picture to POSIX file "{}"
-        """.format(path)
-        system(bash)
+    from appscript import app, mactypes
+    app('Finder').desktop_picture.set(mactypes.File(path))
 
 def set_wallpaper_windows(path):
     # I thought that will be harder

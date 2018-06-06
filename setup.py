@@ -7,7 +7,7 @@ from sys import platform
 
 setup(name='flickpyper',
       version=VERSION,
-      description='Fresh wallpapers from Flickr',
+      description='Fresh wallpapers from Flickr and Unsplash',
       long_description=open('README.md').read(),
       author='Roman Voropaev',
       author_email='voropaev.roma@gmail.com',
@@ -16,7 +16,8 @@ setup(name='flickpyper',
       keywords='flickr wallpaper desktop',
       packages=['flickpyper'],
       scripts=['bin/flickpyper'],
-      install_requires=['flickrapi','wget'],
+      install_requires=['flickrapi','wget'] +
+                ['appscript'] if platform=='darwin' else [],
       data_files=[('',['README.md'])],
       #executables=[Executable('bin/flickpyper')],
       python_requires='>=3.6',
